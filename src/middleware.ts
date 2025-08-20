@@ -1,4 +1,6 @@
 import { NextFunction, Request, Response } from "express";
+// @ts-ignore
+import {config} from './config.js'
 
 
 export function middlewareLogResponses(req: Request, res: Response, next: NextFunction){
@@ -13,8 +15,8 @@ export function middlewareLogResponses(req: Request, res: Response, next: NextFu
   next()
 }
 
-
-
-
-
+export function middlewareMetricsInc(req: Request, res: Response, next: NextFunction) {
+  config.fileserverhits++
+  next()
+}
 
