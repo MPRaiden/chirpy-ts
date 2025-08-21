@@ -10,9 +10,10 @@ app.use("/app", express.static("./src/app"))
 
 app.use(middlewareLogResponses)
 
-app.get("/healthz", handlerReadiness)
-app.get("/metrics", handlerNumRequests)
-app.get("/reset", handlerResetNumRequests)
+app.get("/api/healthz", handlerReadiness)
+
+app.get("/admin/reset", handlerResetNumRequests)
+app.get("/admin/metrics", handlerNumRequests)
 
 
 const server = app.listen(PORT, () => {

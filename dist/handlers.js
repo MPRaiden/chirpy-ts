@@ -1,5 +1,7 @@
 // @ts-ignore
 import { config } from './config.js';
+import path from "path";
+import fs from "fs";
 /**
  * Handler for the /healthz endpoint
  *
@@ -13,7 +15,19 @@ export async function handlerReadiness(req, res) {
     res.send("OK");
 }
 export async function handlerNumRequests(req, res) {
-    res.send(`Hits: ${config.fileserverhits}`);
+    res.set({
+        'Content-Type': 'text/html; charset=utf-8',
+    });
+    const hits = config.fileserverhits;
+    const filePath = path.join(process.cwd(), 'src', 'app', 'admin-metrics.html');
+    fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) {
+            console.log(`function handlerNumRequests: Error reading file ${filePath}. Error - ${err}`);
+            res.send("Error reading file");
+            return;
+        }
+        res.send(data.replace("NUM", hits.toString()));
+    });
 }
 export async function handlerResetNumRequests(req, res) {
     config.fileserverhits = 0;
