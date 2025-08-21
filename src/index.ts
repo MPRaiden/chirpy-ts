@@ -1,5 +1,5 @@
 import express from "express"
-import { handlerNumRequests, handlerReadiness, handlerResetNumRequests } from "./handlers.js";
+import { handlerNumRequests, handlerReadiness, handlerResetNumRequests, handlerValidateChirp } from "./handlers.js";
 import { middlewareLogResponses, middlewareMetricsInc } from "./middleware.js";
 
 const app = express()
@@ -11,8 +11,9 @@ app.use("/app", express.static("./src/app"))
 app.use(middlewareLogResponses)
 
 app.get("/api/healthz", handlerReadiness)
+app.post("/api/validate_chirp", handlerValidateChirp)
 
-app.get("/admin/reset", handlerResetNumRequests)
+app.post("/admin/reset", handlerResetNumRequests)
 app.get("/admin/metrics", handlerNumRequests)
 
 
