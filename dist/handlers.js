@@ -34,28 +34,17 @@ export async function handlerResetNumRequests(req, res) {
     res.send("");
 }
 export async function handlerValidateChirp(req, res) {
-    let body = "";
-    req.on("data", (chunk) => {
-        body += chunk;
-    });
-    req.on("end", () => {
-        try {
-            const parsedBody = JSON.parse(body);
-            console.log("parsedBody", parsedBody);
-            console.log("parsedBody.body", parsedBody.body);
-            console.log("parsedBody.body.length", parsedBody.body.length);
-            if (parsedBody.body.length > 140) {
-                console.log("if");
-                res.status(400).send({ "error": "Chirp is too long" });
-            }
-            else {
-                console.log("else");
-                // If all good send back 200 status and valid is true block
-                res.status(200).send({ "valid": true });
-            }
+    try {
+        const reqBody = req.body;
+        if (reqBody.body.length > 140) {
+            res.status(400).send({ "error": "Chirp is too long" });
         }
-        catch (error) {
-            res.status(400).send({ "error": "Something went wrong" });
+        else {
+            // If all good send back 200 status and valid is true block
+            res.status(200).send({ "valid": true });
         }
-    });
+    }
+    catch (error) {
+        res.status(400).send({ "error": "Something went wrong" });
+    }
 }
