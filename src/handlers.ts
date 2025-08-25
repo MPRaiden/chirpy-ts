@@ -52,8 +52,21 @@ export async function handlerValidateChirp(req: Request, res: Response) {
       if (reqBody.body.length > 140) {
         res.status(400).send({"error": "Chirp is too long"})
       } else {
+        const profanities = ["kerfuffle", "sharbert", "fornax"]
+        const words = reqBody.body.split(" ")
+
+      for (let i = 0; i < words.length; i++) {
+        const word = words[i];
+        const loweredWord = word.toLowerCase();
+        if (profanities.includes(loweredWord)) {
+          words[i] = "****";
+        }
+      }
+
+      const cleaned = words.join(" ");
+        
         // If all good send back 200 status and valid is true block
-        res.status(200).send({"valid": true})
+        res.status(200).send({"cleanedBody": cleaned})
       }
     } catch (error) {
       res.status(400).send({"error": "Something went wrong"})

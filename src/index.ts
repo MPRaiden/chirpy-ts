@@ -3,7 +3,7 @@ import { handlerNumRequests, handlerReadiness, handlerResetNumRequests, handlerV
 import { middlewareLogResponses, middlewareMetricsInc } from "./middleware.js";
 
 const app = express()
-const PORT = 8080
+const PORT = 8081
 
 app.use("/app", middlewareMetricsInc)
 app.use("/app", express.static("./src/app"))
