@@ -2,6 +2,7 @@
 import { config } from './config.js';
 import path from "path";
 import fs from "fs";
+import { BadRequestError, ForbiddenRequestError, NotFoundError, UnauthorizedRequestError } from "./errors.js";
 /**
  * Handler for the /healthz endpoint
  *
@@ -52,7 +53,7 @@ export async function handlerValidateChirp(req, res, next) {
     try {
         const reqBody = req.body;
         if (reqBody.body.length > 140) {
-            throw new Error();
+            throw new BadRequestError("Chirp is too long. Max length is 140");
         }
         else {
             const profanities = ["kerfuffle", "sharbert", "fornax"];
@@ -74,8 +75,29 @@ export async function handlerValidateChirp(req, res, next) {
     }
 }
 export function handlersError(err, req, res, next) {
-    console.error(err);
-    res.status(500).json({
-        error: "Something went wrong on our end",
-    });
+    if (err instanceof BadRequestError) {
+        res.status(400).json({
+            error: err.message
+        });
+    }
+    else if (err instanceof NotFoundError) {
+        res.status(404).json({
+            error: err.message
+        });
+    }
+    else if (err instanceof UnauthorizedRequestError) {
+        res.status(401).json({
+            error: err.message
+        });
+    }
+    else if (err instanceof ForbiddenRequestError) {
+        res.status(403).json({
+            error: err.message
+        });
+    }
+    else {
+        res.status(500).json({
+            error: "Something went wrong on our end",
+        });
+    }
 }
