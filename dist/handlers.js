@@ -8,36 +8,51 @@ import fs from "fs";
  * @param req {Request} - the incoming request
  * @param res {Response} - the outgoing response
  */
-export async function handlerReadiness(req, res) {
-    res.set({
-        'Content-Type': 'text/plain; charset=utf-8',
-    });
-    res.send("OK");
+export async function handlerReadiness(req, res, next) {
+    try {
+        res.set({
+            'Content-Type': 'text/plain; charset=utf-8',
+        });
+        res.send("OK");
+    }
+    catch (error) {
+        next(error);
+    }
 }
-export async function handlerNumRequests(req, res) {
-    res.set({
-        'Content-Type': 'text/html; charset=utf-8',
-    });
-    const hits = config.fileserverhits;
-    const filePath = path.join(process.cwd(), 'src', 'app', 'admin-metrics.html');
-    fs.readFile(filePath, 'utf8', (err, data) => {
-        if (err) {
-            console.log(`function handlerNumRequests: Error reading file ${filePath}. Error - ${err}`);
-            res.send("Error reading file");
-            return;
-        }
-        res.send(data.replace("NUM", hits.toString()));
-    });
+export async function handlerNumRequests(req, res, next) {
+    try {
+        res.set({
+            'Content-Type': 'text/html; charset=utf-8',
+        });
+        const hits = config.fileserverhits;
+        const filePath = path.join(process.cwd(), 'src', 'app', 'admin-metrics.html');
+        fs.readFile(filePath, 'utf8', (err, data) => {
+            if (err) {
+                console.log(`function handlerNumRequests: Error reading file ${filePath}. Error - ${err}`);
+                res.send("Error reading file");
+                return;
+            }
+            res.send(data.replace("NUM", hits.toString()));
+        });
+    }
+    catch (error) {
+        next(error);
+    }
 }
-export async function handlerResetNumRequests(req, res) {
-    config.fileserverhits = 0;
-    res.send("");
+export async function handlerResetNumRequests(req, res, next) {
+    try {
+        config.fileserverhits = 0;
+        res.send("");
+    }
+    catch (error) {
+        next(error);
+    }
 }
-export async function handlerValidateChirp(req, res) {
+export async function handlerValidateChirp(req, res, next) {
     try {
         const reqBody = req.body;
         if (reqBody.body.length > 140) {
-            res.status(400).send({ "error": "Chirp is too long" });
+            throw new Error();
         }
         else {
             const profanities = ["kerfuffle", "sharbert", "fornax"];
@@ -55,6 +70,12 @@ export async function handlerValidateChirp(req, res) {
         }
     }
     catch (error) {
-        res.status(400).send({ "error": "Something went wrong" });
+        next(error);
     }
+}
+export function handlersError(err, req, res, next) {
+    console.error(err);
+    res.status(500).json({
+        error: "Something went wrong on our end",
+    });
 }

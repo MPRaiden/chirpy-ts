@@ -1,4 +1,4 @@
-import { Request, Response } from "express"
+import { NextFunction, Request, Response } from "express"
 // @ts-ignore
 import { config } from './config.js'
 import path from "path"
@@ -11,14 +11,19 @@ import fs from "fs"
  * @param req {Request} - the incoming request
  * @param res {Response} - the outgoing response
  */
-export async function handlerReadiness(req: Request, res: Response) {
+export async function handlerReadiness(req: Request, res: Response, next: NextFunction) {
+  try {
   res.set({
     'Content-Type': 'text/plain; charset=utf-8',
   })
   res.send("OK")
+  } catch (error) {
+    next(error)
+  }
 }
 
-export async function handlerNumRequests(req: Request, res: Response) {
+export async function handlerNumRequests(req: Request, res: Response, next: NextFunction) {
+  try {
   res.set({
     'Content-Type': 'text/html; charset=utf-8',
     })
@@ -35,22 +40,30 @@ export async function handlerNumRequests(req: Request, res: Response) {
 
     res.send(data.replace("NUM", hits.toString()));
   })
+  } catch (error) {
+    next(error)
+  }
 }
 
-export async function handlerResetNumRequests(req: Request, res: Response) {
+export async function handlerResetNumRequests(req: Request, res: Response, next: NextFunction) {
+  try {
   config.fileserverhits = 0
   res.send("")
+    } catch (error) {
+      next(error)
+    }
 }
 
-export async function handlerValidateChirp(req: Request, res: Response) {
-    try {
-      type params = {
+export async function handlerValidateChirp(req: Request, res: Response, next: NextFunction) {
+    type params = {
       body: string
     }
+
+    try {
       const reqBody: params = req.body
-      
+        
       if (reqBody.body.length > 140) {
-        res.status(400).send({"error": "Chirp is too long"})
+        throw new Error()
       } else {
         const profanities = ["kerfuffle", "sharbert", "fornax"]
         const words = reqBody.body.split(" ")
@@ -68,8 +81,20 @@ export async function handlerValidateChirp(req: Request, res: Response) {
         // If all good send back 200 status and valid is true block
         res.status(200).send({"cleanedBody": cleaned})
       }
-    } catch (error) {
-      res.status(400).send({"error": "Something went wrong"})
-    }
+  } catch (error) {
+    next(error)
+  }
+}
+
+export function handlersError(
+  err: Error,
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  console.error(err);
+  res.status(500).json({
+    error: "Something went wrong on our end",
+  });
 }
 
