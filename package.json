@@ -18,11 +18,14 @@
     "@types/node": "^24.2.1",
     "@typescript-eslint/eslint-plugin": "^8.39.0",
     "@typescript-eslint/parser": "^8.39.0",
+    "drizzle-kit": "^0.31.4",
     "eslint": "^9.33.0",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.39.0"
   },
   "dependencies": {
-    "express": "^5.1.0"
+    "drizzle-orm": "^0.44.5",
+    "express": "^5.1.0",
+    "postgres": "^3.4.7"
   }
 }
