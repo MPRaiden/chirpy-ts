@@ -46,15 +46,6 @@ export async function handlerNumRequests(req: Request, res: Response, next: Next
   }
 }
 
-export async function handlerResetNumRequests(req: Request, res: Response, next: NextFunction) {
-  try {
-    config.fileserverhits = 0
-    res.send("")
-  } catch (error) {
-    next(error)
-  }
-}
-
 export async function handlerValidateChirp(req: Request, res: Response, next: NextFunction) {
     type params = {
       body: string

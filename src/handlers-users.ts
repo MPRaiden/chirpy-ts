@@ -1,7 +1,9 @@
 import { NextFunction, Request, Response} from "express"
-import { BadRequestError } from "./errors"
-import { createUser } from "./lib/queries/users"
-import { NewUser } from "./lib/db/schema"
+
+import { BadRequestError, ForbiddenRequestError } from "./errors.js"
+import { createUser, deleteUsers } from "./lib/queries/users.js"
+import { NewUser } from "./lib/db/schema.js"
+import { config } from "./config.js"
 
 export async function handlersCreateUser(req: Request, res: Response, next: NextFunction) {
   try {
@@ -29,5 +31,21 @@ export async function handlersCreateUser(req: Request, res: Response, next: Next
   } catch (error) {
     next(error)
   }
-
 }
+
+export async function handlersDeleteUsers(req: Request, res: Response, next: NextFunction) {
+  try {
+    if (config.platform !== "dev") {
+      throw new ForbiddenRequestError("this endpoint is only allowed in DEV environment")
+    }
+
+    await deleteUsers()
+  } catch(error) {
+    next(error)
+  }
+
+  res.status(200).json({
+    "status": "ok"
+  })
+}
+

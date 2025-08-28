@@ -1,13 +1,15 @@
-import { envOrThrow } from "./helpers"
+import { envOrThrow } from "./helpers.js"
 import {MigrationConfig} from "drizzle-orm/migrator"
 
 process.loadEnvFile()
 
 const DB_URL = envOrThrow(process.env.DB_URL)
+const PLATFORM = envOrThrow(process.env.PLATFORM)
 
 type APIConfig = {
   fileserverhits: number,
   dbConfig: DBConfig,
+  platform: string,
 }
 
 type DBConfig = {
@@ -22,6 +24,7 @@ export const config: APIConfig = {
     migrationsConfig: {
       migrationsFolder:"src/lib/db/migrations"
     }
-  }
+  },
+  platform: PLATFORM
 }
 

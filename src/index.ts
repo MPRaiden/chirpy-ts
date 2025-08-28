@@ -1,12 +1,12 @@
 import express from "express"
-import { handlerNumRequests, handlerReadiness, handlerResetNumRequests, handlersError, handlerValidateChirp } from "./handlers.js"
+import { handlerNumRequests, handlerReadiness, handlersError, handlerValidateChirp } from "./handlers.js"
 import {middlewareLogResponses, middlewareMetricsInc } from "./middleware.js"
 
 import postgres from "postgres"
 import { migrate } from "drizzle-orm/postgres-js/migrator"
 import { drizzle } from "drizzle-orm/postgres-js"
 import { config } from "./config.js"
-import { handlersCreateUser } from "./handlers-users.js"
+import { handlersCreateUser, handlersDeleteUsers } from "./handlers-users.js"
 
 const migrationClient = postgres(config.dbConfig.dbConnectionString, { max: 1 })
 await migrate(drizzle(migrationClient), config.dbConfig.migrationsConfig)
@@ -23,7 +23,7 @@ app.get("/api/healthz", handlerReadiness)
 app.post("/api/validate_chirp", handlerValidateChirp)
 app.post("/api/users", handlersCreateUser)
 
-app.post("/admin/reset", handlerResetNumRequests)
+app.post("/admin/reset", handlersDeleteUsers)
 app.get("/admin/metrics", handlerNumRequests)
 
 
