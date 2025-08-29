@@ -1,5 +1,5 @@
-import { db } from "../index.js"
-import { NewUser, users } from "../db/schema.js"
+import { db } from "../index"
+import { NewUser, users } from "../db/schema"
 
 export async function createUser(user: NewUser) {
   const [result] = await db

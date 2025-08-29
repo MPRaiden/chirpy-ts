@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express"
 // @ts-ignore
-import { config } from './config.js'
+import { config } from './config'
 import path from "path"
 import fs from "fs"
-import { BadRequestError, ForbiddenRequestError, NotFoundError, UnauthorizedRequestError } from "./errors.js"
+import { BadRequestError, ForbiddenRequestError, NotFoundError, UnauthorizedRequestError } from "./errors"
 
 
 /**
@@ -44,38 +44,6 @@ export async function handlerNumRequests(req: Request, res: Response, next: Next
   } catch (error) {
     next(error)
   }
-}
-
-export async function handlerValidateChirp(req: Request, res: Response, next: NextFunction) {
-    type params = {
-      body: string
-    }
-
-    try {
-      const reqBody: params = req.body
-        
-      if (reqBody.body.length > 140) {
-        throw new BadRequestError("Chirp is too long. Max length is 140")
-      } else {
-        const profanities = ["kerfuffle", "sharbert", "fornax"]
-        const words = reqBody.body.split(" ")
-
-        for (let i = 0; i < words.length; i++) {
-          const word = words[i]
-          const loweredWord = word.toLowerCase()
-          if (profanities.includes(loweredWord)) {
-            words[i] = "****"
-          }
-        }
-
-        const cleaned = words.join(" ")
-        
-        // If all good send back 200 status and valid is true block
-        res.status(200).send({"cleanedBody": cleaned})
-      }
-    } catch (error) {
-      next(error)
-    }
 }
 
 export function handlersError(

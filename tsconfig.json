@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "target": "esnext",
-    "module": "esnext",
+    "target": "ES2020",
+    "module": "CommonJS",
     "rootDir": "./src",
     "outDir": "./dist",
     "strict": true,

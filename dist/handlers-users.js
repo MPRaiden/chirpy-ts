@@ -1,17 +1,21 @@
-import { BadRequestError, ForbiddenRequestError } from "./errors.js";
-import { createUser, deleteUsers } from "./lib/queries/users.js";
-import { config } from "./config.js";
-export async function handlersCreateUser(req, res, next) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.handlersCreateUser = handlersCreateUser;
+exports.handlersDeleteUsers = handlersDeleteUsers;
+const errors_1 = require("./errors");
+const users_1 = require("./lib/queries/users");
+const config_1 = require("./config");
+async function handlersCreateUser(req, res, next) {
     try {
         const reqBody = req.body;
         const email = reqBody.email;
         if (typeof (email) !== "string" || email.length === 0) {
-            throw new BadRequestError("email missing from request body");
+            throw new errors_1.BadRequestError("email missing from request body");
         }
         const newUser = { email };
-        const created = await createUser(newUser);
+        const created = await (0, users_1.createUser)(newUser);
         if (!created) {
-            throw new BadRequestError("user already exists");
+            throw new errors_1.BadRequestError("user already exists");
         }
         res.status(201).json({
             id: created.id,
@@ -24,12 +28,12 @@ export async function handlersCreateUser(req, res, next) {
         next(error);
     }
 }
-export async function handlersDeleteUsers(req, res, next) {
+async function handlersDeleteUsers(req, res, next) {
     try {
-        if (config.platform !== "dev") {
-            throw new ForbiddenRequestError("this endpoint is only allowed in DEV environment");
+        if (config_1.config.platform !== "dev") {
+            throw new errors_1.ForbiddenRequestError("this endpoint is only allowed in DEV environment");
         }
-        await deleteUsers();
+        await (0, users_1.deleteUsers)();
     }
     catch (error) {
         next(error);

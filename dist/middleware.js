@@ -1,6 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.middlewareLogResponses = middlewareLogResponses;
+exports.middlewareMetricsInc = middlewareMetricsInc;
 // @ts-ignore
-import { config } from './config.js';
-export function middlewareLogResponses(req, res, next) {
+const config_1 = require("./config");
+function middlewareLogResponses(req, res, next) {
     res.on("finish", () => {
         const status = res.statusCode;
         if (status < 200 || status >= 300) {
@@ -9,7 +13,7 @@ export function middlewareLogResponses(req, res, next) {
     });
     next();
 }
-export function middlewareMetricsInc(req, res, next) {
-    config.fileserverhits++;
+function middlewareMetricsInc(req, res, next) {
+    config_1.config.fileserverhits++;
     next();
 }

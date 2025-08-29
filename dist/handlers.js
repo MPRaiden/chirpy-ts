@@ -1,15 +1,23 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.handlerReadiness = handlerReadiness;
+exports.handlerNumRequests = handlerNumRequests;
+exports.handlersError = handlersError;
 // @ts-ignore
-import { config } from './config.js';
-import path from "path";
-import fs from "fs";
-import { BadRequestError, ForbiddenRequestError, NotFoundError, UnauthorizedRequestError } from "./errors.js";
+const config_1 = require("./config");
+const path_1 = __importDefault(require("path"));
+const fs_1 = __importDefault(require("fs"));
+const errors_1 = require("./errors");
 /**
  * Handler for the /healthz endpoint
  *
  * @param req {Request} - the incoming request
  * @param res {Response} - the outgoing response
  */
-export async function handlerReadiness(req, res, next) {
+async function handlerReadiness(req, res, next) {
     try {
         res.set({
             'Content-Type': 'text/plain; charset=utf-8',
@@ -20,14 +28,14 @@ export async function handlerReadiness(req, res, next) {
         next(error);
     }
 }
-export async function handlerNumRequests(req, res, next) {
+async function handlerNumRequests(req, res, next) {
     try {
         res.set({
             'Content-Type': 'text/html; charset=utf-8',
         });
-        const hits = config.fileserverhits;
-        const filePath = path.join(process.cwd(), 'src', 'app', 'admin-metrics.html');
-        fs.readFile(filePath, 'utf8', (err, data) => {
+        const hits = config_1.config.fileserverhits;
+        const filePath = path_1.default.join(process.cwd(), 'src', 'app', 'admin-metrics.html');
+        fs_1.default.readFile(filePath, 'utf8', (err, data) => {
             if (err) {
                 console.log(`function handlerNumRequests: Error reading file ${filePath}. Error - ${err}`);
                 res.send("Error reading file");
@@ -40,48 +48,23 @@ export async function handlerNumRequests(req, res, next) {
         next(error);
     }
 }
-export async function handlerValidateChirp(req, res, next) {
-    try {
-        const reqBody = req.body;
-        if (reqBody.body.length > 140) {
-            throw new BadRequestError("Chirp is too long. Max length is 140");
-        }
-        else {
-            const profanities = ["kerfuffle", "sharbert", "fornax"];
-            const words = reqBody.body.split(" ");
-            for (let i = 0; i < words.length; i++) {
-                const word = words[i];
-                const loweredWord = word.toLowerCase();
-                if (profanities.includes(loweredWord)) {
-                    words[i] = "****";
-                }
-            }
-            const cleaned = words.join(" ");
-            // If all good send back 200 status and valid is true block
-            res.status(200).send({ "cleanedBody": cleaned });
-        }
-    }
-    catch (error) {
-        next(error);
-    }
-}
-export function handlersError(err, req, res, next) {
-    if (err instanceof BadRequestError) {
+function handlersError(err, req, res, next) {
+    if (err instanceof errors_1.BadRequestError) {
         res.status(400).json({
             error: err.message
         });
     }
-    else if (err instanceof NotFoundError) {
+    else if (err instanceof errors_1.NotFoundError) {
         res.status(404).json({
             error: err.message
         });
     }
-    else if (err instanceof UnauthorizedRequestError) {
+    else if (err instanceof errors_1.UnauthorizedRequestError) {
         res.status(401).json({
             error: err.message
         });
     }
-    else if (err instanceof ForbiddenRequestError) {
+    else if (err instanceof errors_1.ForbiddenRequestError) {
         res.status(403).json({
             error: err.message
         });

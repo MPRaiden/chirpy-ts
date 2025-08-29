@@ -1,25 +1,38 @@
-import express from "express";
-import { handlerNumRequests, handlerReadiness, handlersError, handlerValidateChirp } from "./handlers.js";
-import { middlewareLogResponses, middlewareMetricsInc } from "./middleware.js";
-import postgres from "postgres";
-import { migrate } from "drizzle-orm/postgres-js/migrator";
-import { drizzle } from "drizzle-orm/postgres-js";
-import { config } from "./config.js";
-import { handlersCreateUser, handlersDeleteUsers } from "./handlers-users.js";
-const migrationClient = postgres(config.dbConfig.dbConnectionString, { max: 1 });
-await migrate(drizzle(migrationClient), config.dbConfig.migrationsConfig);
-const app = express();
-const PORT = 8081;
-app.use("/app", middlewareMetricsInc);
-app.use("/app", express.static("./src/app"));
-app.use(express.json());
-app.use(middlewareLogResponses);
-app.get("/api/healthz", handlerReadiness);
-app.post("/api/validate_chirp", handlerValidateChirp);
-app.post("/api/users", handlersCreateUser);
-app.post("/admin/reset", handlersDeleteUsers);
-app.get("/admin/metrics", handlerNumRequests);
-app.use(handlersError);
-const server = app.listen(PORT, () => {
-    console.log(`server listening on port ${PORT}`);
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const postgres_1 = __importDefault(require("postgres"));
+const migrator_1 = require("drizzle-orm/postgres-js/migrator");
+const handlers_1 = require("./handlers");
+const middleware_1 = require("./middleware");
+const postgres_js_1 = require("drizzle-orm/postgres-js");
+const config_1 = require("./config");
+const handlers_users_1 = require("./handlers-users");
+const handlers_chirps_1 = require("./handlers-chirps");
+(async () => {
+    const migrationClient = (0, postgres_1.default)(config_1.config.dbConfig.dbConnectionString, { max: 1 });
+    await (0, migrator_1.migrate)((0, postgres_js_1.drizzle)(migrationClient), config_1.config.dbConfig.migrationsConfig);
+    const app = (0, express_1.default)();
+    const PORT = 8081;
+    app.use("/app", middleware_1.middlewareMetricsInc);
+    app.use("/app", express_1.default.static("./src/app"));
+    app.use(express_1.default.json());
+    app.use(middleware_1.middlewareLogResponses);
+    app.get("/api/healthz", handlers_1.handlerReadiness);
+    app.post("/api/chirps", handlers_chirps_1.handlersCreateChirp);
+    app.post("/api/users", handlers_users_1.handlersCreateUser);
+    app.post("/admin/reset", handlers_users_1.handlersDeleteUsers);
+    app.get("/admin/metrics", handlers_1.handlerNumRequests);
+    app.use(handlers_1.handlersError);
+    const server = app.listen(PORT, () => {
+        console.log(`server listening on port ${PORT}`);
+    });
+    console.log(`server - ${server}`);
+})().catch((err) => {
+    console.log("?here");
+    console.error(err);
+    process.exit(1);
 });

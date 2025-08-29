@@ -1,37 +1,45 @@
 import express from "express"
-import { handlerNumRequests, handlerReadiness, handlersError, handlerValidateChirp } from "./handlers.js"
-import {middlewareLogResponses, middlewareMetricsInc } from "./middleware.js"
-
 import postgres from "postgres"
 import { migrate } from "drizzle-orm/postgres-js/migrator"
+
+import { handlerNumRequests, handlerReadiness, handlersError } from "./handlers"
+import { middlewareLogResponses, middlewareMetricsInc } from "./middleware"
 import { drizzle } from "drizzle-orm/postgres-js"
-import { config } from "./config.js"
-import { handlersCreateUser, handlersDeleteUsers } from "./handlers-users.js"
+import { config } from "./config"
+import { handlersCreateUser, handlersDeleteUsers } from "./handlers-users"
+import { handlersCreateChirp } from "./handlers-chirps"
 
-const migrationClient = postgres(config.dbConfig.dbConnectionString, { max: 1 })
-await migrate(drizzle(migrationClient), config.dbConfig.migrationsConfig)
+(async() => {
+  const migrationClient = postgres(config.dbConfig.dbConnectionString, { max: 1 })
+  await migrate(drizzle(migrationClient), config.dbConfig.migrationsConfig)
 
-const app = express()
-const PORT = 8081
+  const app = express()
+  const PORT = 8081
 
-app.use("/app", middlewareMetricsInc)
-app.use("/app", express.static("./src/app"))
-app.use(express.json())
-app.use(middlewareLogResponses)
+  app.use("/app", middlewareMetricsInc)
+  app.use("/app", express.static("./src/app"))
+  app.use(express.json())
+  app.use(middlewareLogResponses)
 
-app.get("/api/healthz", handlerReadiness)
-app.post("/api/validate_chirp", handlerValidateChirp)
-app.post("/api/users", handlersCreateUser)
+  app.get("/api/healthz", handlerReadiness)
+  app.post("/api/chirps", handlersCreateChirp)
+  app.post("/api/users", handlersCreateUser)
 
-app.post("/admin/reset", handlersDeleteUsers)
-app.get("/admin/metrics", handlerNumRequests)
-
-
-app.use(handlersError)
+  app.post("/admin/reset", handlersDeleteUsers)
+  app.get("/admin/metrics", handlerNumRequests)
 
 
-const server = app.listen(PORT, () => {
-  console.log(`server listening on port ${PORT}`)
+  app.use(handlersError)
+
+
+  const server = app.listen(PORT, () => {
+    console.log(`server listening on port ${PORT}`)
+  })
+  console.log(`server - ${server}`)
+
+})().catch((err) => {
+  console.log("?here")
+  console.error(err)
+  process.exit(1)
 })
-
 

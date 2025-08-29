@@ -1,4 +1,4 @@
-import { envOrThrow } from "./helpers.js"
+import { envOrThrow } from "./helpers"
 import {MigrationConfig} from "drizzle-orm/migrator"
 
 process.loadEnvFile()

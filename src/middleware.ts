@@ -1,6 +1,6 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Request, Response } from "express"
 // @ts-ignore
-import {config} from './config.js'
+import {config} from './config'
 
 
 export function middlewareLogResponses(req: Request, res: Response, next: NextFunction){

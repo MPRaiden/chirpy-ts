@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response} from "express"
 
-import { BadRequestError, ForbiddenRequestError } from "./errors.js"
-import { createUser, deleteUsers } from "./lib/queries/users.js"
-import { NewUser } from "./lib/db/schema.js"
-import { config } from "./config.js"
+import { BadRequestError, ForbiddenRequestError } from "./errors"
+import { createUser, deleteUsers } from "./lib/queries/users"
+import { NewUser } from "./lib/db/schema"
+import { config } from "./config"
 
 export async function handlersCreateUser(req: Request, res: Response, next: NextFunction) {
   try {
