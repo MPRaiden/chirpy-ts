@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response} from "express"
 import { BadRequestError } from "./errors"
-import { createChirp } from "./lib/queries/chirps"
+import { createChirp, getChirps } from "./lib/queries/chirps"
 import { NewChirp } from "./lib/db/schema"
 
 
@@ -46,6 +46,25 @@ export async function handlersCreateChirp(req: Request, res: Response, next: Nex
       })
     }
   } catch (error) {
+    next(error)
+  }
+}
+
+export async function handlersGetChirps(req: Request, res: Response, next: NextFunction) {
+  type params = {
+          body: string
+          userId: string
+        }
+
+  try {
+    const chirps = await getChirps()
+    if (!chirps) {
+      throw new BadRequestError("something went wrong with retrieving chirps")
+    }
+
+    res.status(200).json(chirps)
+
+  } catch(error) {
     next(error)
   }
 }

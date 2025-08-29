@@ -23,6 +23,7 @@ const handlers_chirps_1 = require("./handlers-chirps");
     app.use(middleware_1.middlewareLogResponses);
     app.get("/api/healthz", handlers_1.handlerReadiness);
     app.post("/api/chirps", handlers_chirps_1.handlersCreateChirp);
+    app.get("/api/chirps", handlers_chirps_1.handlersGetChirps);
     app.post("/api/users", handlers_users_1.handlersCreateUser);
     app.post("/admin/reset", handlers_users_1.handlersDeleteUsers);
     app.get("/admin/metrics", handlers_1.handlerNumRequests);
@@ -30,9 +31,7 @@ const handlers_chirps_1 = require("./handlers-chirps");
     const server = app.listen(PORT, () => {
         console.log(`server listening on port ${PORT}`);
     });
-    console.log(`server - ${server}`);
 })().catch((err) => {
-    console.log("?here");
     console.error(err);
     process.exit(1);
 });

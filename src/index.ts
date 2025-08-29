@@ -7,7 +7,7 @@ import { middlewareLogResponses, middlewareMetricsInc } from "./middleware"
 import { drizzle } from "drizzle-orm/postgres-js"
 import { config } from "./config"
 import { handlersCreateUser, handlersDeleteUsers } from "./handlers-users"
-import { handlersCreateChirp } from "./handlers-chirps"
+import { handlersCreateChirp, handlersGetChirps } from "./handlers-chirps"
 
 (async() => {
   const migrationClient = postgres(config.dbConfig.dbConnectionString, { max: 1 })
@@ -23,6 +23,7 @@ import { handlersCreateChirp } from "./handlers-chirps"
 
   app.get("/api/healthz", handlerReadiness)
   app.post("/api/chirps", handlersCreateChirp)
+  app.get("/api/chirps", handlersGetChirps)
   app.post("/api/users", handlersCreateUser)
 
   app.post("/admin/reset", handlersDeleteUsers)
@@ -35,10 +36,8 @@ import { handlersCreateChirp } from "./handlers-chirps"
   const server = app.listen(PORT, () => {
     console.log(`server listening on port ${PORT}`)
   })
-  console.log(`server - ${server}`)
 
 })().catch((err) => {
-  console.log("?here")
   console.error(err)
   process.exit(1)
 })

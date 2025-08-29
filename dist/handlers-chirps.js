@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handlersCreateChirp = handlersCreateChirp;
+exports.handlersGetChirps = handlersGetChirps;
 const errors_1 = require("./errors");
 const chirps_1 = require("./lib/queries/chirps");
 async function handlersCreateChirp(req, res, next) {
@@ -34,6 +35,18 @@ async function handlersCreateChirp(req, res, next) {
                 userId: created.userId
             });
         }
+    }
+    catch (error) {
+        next(error);
+    }
+}
+async function handlersGetChirps(req, res, next) {
+    try {
+        const chirps = await (0, chirps_1.getChirps)();
+        if (!chirps) {
+            throw new errors_1.BadRequestError("something went wrong with retrieving chirps");
+        }
+        res.status(200).json(chirps);
     }
     catch (error) {
         next(error);
