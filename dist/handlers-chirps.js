@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handlersCreateChirp = handlersCreateChirp;
 exports.handlersGetChirps = handlersGetChirps;
+exports.handlersGetChirp = handlersGetChirp;
 const errors_1 = require("./errors");
 const chirps_1 = require("./lib/queries/chirps");
 async function handlersCreateChirp(req, res, next) {
@@ -43,10 +44,26 @@ async function handlersCreateChirp(req, res, next) {
 async function handlersGetChirps(req, res, next) {
     try {
         const chirps = await (0, chirps_1.getChirps)();
-        if (!chirps) {
-            throw new errors_1.BadRequestError("something went wrong with retrieving chirps");
-        }
         res.status(200).json(chirps);
+    }
+    catch (error) {
+        next(error);
+    }
+}
+async function handlersGetChirp(req, res, next) {
+    try {
+        const params = req.params;
+        console.log("params\n", params);
+        const chirpID = params.chirpID;
+        console.log("chirpID\n", chirpID);
+        const chirp = await (0, chirps_1.getChirpById)(chirpID);
+        console.log("chirp\n", chirp);
+        if (chirp) {
+            res.status(200).json(chirp);
+        }
+        else {
+            throw new errors_1.NotFoundError(`chirp with ID "${chirpID}" not found`);
+        }
     }
     catch (error) {
         next(error);

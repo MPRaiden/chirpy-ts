@@ -24,6 +24,7 @@ const handlers_chirps_1 = require("./handlers-chirps");
     app.get("/api/healthz", handlers_1.handlerReadiness);
     app.post("/api/chirps", handlers_chirps_1.handlersCreateChirp);
     app.get("/api/chirps", handlers_chirps_1.handlersGetChirps);
+    app.get("/api/chirps/:chirpID", handlers_chirps_1.handlersGetChirp);
     app.post("/api/users", handlers_users_1.handlersCreateUser);
     app.post("/admin/reset", handlers_users_1.handlersDeleteUsers);
     app.get("/admin/metrics", handlers_1.handlerNumRequests);

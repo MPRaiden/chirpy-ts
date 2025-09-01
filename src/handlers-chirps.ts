@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response} from "express"
-import { BadRequestError } from "./errors"
-import { createChirp, getChirps } from "./lib/queries/chirps"
+import { BadRequestError, NotFoundError } from "./errors"
+import { createChirp, getChirpById, getChirps } from "./lib/queries/chirps"
 import { NewChirp } from "./lib/db/schema"
 
 
@@ -51,19 +51,29 @@ export async function handlersCreateChirp(req: Request, res: Response, next: Nex
 }
 
 export async function handlersGetChirps(req: Request, res: Response, next: NextFunction) {
-  type params = {
-          body: string
-          userId: string
-        }
-
   try {
     const chirps = await getChirps()
-    if (!chirps) {
-      throw new BadRequestError("something went wrong with retrieving chirps")
+    if (chirps) {
+      res.status(200).json(chirps)
+    } else {
+      throw new NotFoundError("no chirps found")
     }
+  } catch(error) {
+    next(error)
+  }
+}
 
-    res.status(200).json(chirps)
+export async function handlersGetChirp(req: Request, res: Response, next: NextFunction) {
+  try {
+    const params = req.params
+    const chirpID = params.chirpID
 
+    const chirp = await getChirpById(chirpID)
+    if (chirp) {
+      res.status(200).json(chirp)
+    } else {
+      throw new NotFoundError(`chirp with ID "${chirpID}" not found`)
+    }
   } catch(error) {
     next(error)
   }

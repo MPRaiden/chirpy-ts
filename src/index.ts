@@ -7,7 +7,7 @@ import { middlewareLogResponses, middlewareMetricsInc } from "./middleware"
 import { drizzle } from "drizzle-orm/postgres-js"
 import { config } from "./config"
 import { handlersCreateUser, handlersDeleteUsers } from "./handlers-users"
-import { handlersCreateChirp, handlersGetChirps } from "./handlers-chirps"
+import { handlersCreateChirp, handlersGetChirp, handlersGetChirps } from "./handlers-chirps"
 
 (async() => {
   const migrationClient = postgres(config.dbConfig.dbConnectionString, { max: 1 })
@@ -24,6 +24,7 @@ import { handlersCreateChirp, handlersGetChirps } from "./handlers-chirps"
   app.get("/api/healthz", handlerReadiness)
   app.post("/api/chirps", handlersCreateChirp)
   app.get("/api/chirps", handlersGetChirps)
+  app.get("/api/chirps/:chirpID", handlersGetChirp)
   app.post("/api/users", handlersCreateUser)
 
   app.post("/admin/reset", handlersDeleteUsers)
