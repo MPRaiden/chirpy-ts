@@ -44,7 +44,12 @@ async function handlersCreateChirp(req, res, next) {
 async function handlersGetChirps(req, res, next) {
     try {
         const chirps = await (0, chirps_1.getChirps)();
-        res.status(200).json(chirps);
+        if (chirps) {
+            res.status(200).json(chirps);
+        }
+        else {
+            throw new errors_1.NotFoundError("no chirps found");
+        }
     }
     catch (error) {
         next(error);
@@ -53,11 +58,8 @@ async function handlersGetChirps(req, res, next) {
 async function handlersGetChirp(req, res, next) {
     try {
         const params = req.params;
-        console.log("params\n", params);
         const chirpID = params.chirpID;
-        console.log("chirpID\n", chirpID);
         const chirp = await (0, chirps_1.getChirpById)(chirpID);
-        console.log("chirp\n", chirp);
         if (chirp) {
             res.status(200).json(chirp);
         }

@@ -10,6 +10,7 @@ exports.users = (0, pg_core_1.pgTable)("users", {
         .defaultNow()
         .$onUpdate(() => new Date()),
     email: (0, pg_core_1.varchar)("email", { length: 256 }).unique().notNull(),
+    hashed_password: (0, pg_core_1.varchar)("password").notNull().default("unset")
 });
 exports.chirps = (0, pg_core_1.pgTable)("chirps", {
     id: (0, pg_core_1.uuid)("id").primaryKey().defaultRandom(),

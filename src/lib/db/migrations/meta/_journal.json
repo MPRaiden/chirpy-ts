@@ -15,6 +15,13 @@
       "when": 1756446485269,
       "tag": "0001_mighty_omega_sentinel",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1756731587903,
+      "tag": "0002_typical_blindfold",
+      "breakpoints": true
     }
   ]
 }

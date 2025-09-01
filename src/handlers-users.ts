@@ -1,20 +1,26 @@
 import { NextFunction, Request, Response} from "express"
 
-import { BadRequestError, ForbiddenRequestError } from "./errors"
-import { createUser, deleteUsers } from "./lib/queries/users"
+import { BadRequestError, ForbiddenRequestError, UnauthorizedRequestError } from "./errors"
+import { createUser, deleteUsers, getUserByEmail } from "./lib/queries/users"
 import { NewUser } from "./lib/db/schema"
 import { config } from "./config"
+import { checkPasswordHash, hashPassword } from "./auth"
 
 export async function handlersCreateUser(req: Request, res: Response, next: NextFunction) {
   try {
     const reqBody = req.body
     const email = reqBody.email
+    const password = reqBody.password
 
     if (typeof(email) !== "string" || email.length === 0) {
       throw new BadRequestError("email missing from request body")
     }
+    if(typeof(email) !== "string" || password.length === 0) {
+      throw new BadRequestError("password missing from requst body")
+    }
 
-    const newUser: NewUser= { email }
+    const hashedPassword = await hashPassword(password)
+    const newUser: NewUser= { email: email, hashed_password: hashedPassword }
     const created = await createUser(newUser)
 
     if (!created) {
@@ -47,5 +53,39 @@ export async function handlersDeleteUsers(req: Request, res: Response, next: Nex
   res.status(200).json({
     "status": "ok"
   })
+}
+
+export async function handlersLogin(req: Request, res: Response, next: NextFunction) {
+  try {
+    const reqBody = req.body
+    const email = reqBody.email
+    const password = reqBody.password
+
+    if (typeof(email) !== "string" || email.length === 0) {
+      throw new BadRequestError("email missing from request body")
+    }
+    if(typeof(email) !== "string" || password.length === 0) {
+      throw new BadRequestError("password missing from requst body")
+    }
+
+    const user = await getUserByEmail(email)
+    if (!user) {
+      throw new UnauthorizedRequestError("Incorrect email or password")
+    }
+
+    const match = await checkPasswordHash(password, user.hashed_password)
+    if (!match) {
+      throw new UnauthorizedRequestError("Incorrect email or password")
+    }
+
+    res.status(200).json({
+      id: user.id,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      email: user.email,
+    })
+  } catch(error) {
+    next(error)
+  }
 }
 
