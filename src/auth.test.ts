@@ -1,6 +1,13 @@
 import { describe, it, expect, beforeAll } from "vitest"
-import { hashPassword, checkPasswordHash, makeJWT, validateJWT } from "./auth"
-import { UnauthorizedRequestError } from "./errors"
+import { hashPassword, checkPasswordHash, makeJWT, validateJWT, getBearerToken } from "./auth"
+import { BadRequestError, UnauthorizedRequestError } from "./errors"
+import { Request } from "express"
+
+function mockReq(authHeader?: string) {
+  return {
+    get: (name: string) => (name.toLowerCase() === "authorization" ? authHeader : undefined),
+  } as unknown as Request
+}
 
 process.env.SALT_ROUNDS = "10"
 
@@ -67,5 +74,19 @@ describe("JWT Functions", () => {
       UnauthorizedRequestError,
     )
   })
-})
+
+  it("throws UnauthorizedRequestError when Authorization header is missing", () => {
+    const req = mockReq(undefined)
+    expect(() => getBearerToken(req)).toThrow(UnauthorizedRequestError)
+  })
+
+  it("throws BadRequestError when header lacks Bearer prefix", () => {
+    const req = mockReq("Token abc")
+    expect(() => getBearerToken(req)).toThrow(BadRequestError)
+  })
+
+  it("returns token when header is valid", () => {
+    const req = mockReq("Bearer abc123")
+    expect(getBearerToken(req)).toBe("abc123")
+  })})
 

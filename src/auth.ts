@@ -2,7 +2,8 @@ import bcrypt from "bcrypt"
 import { envOrThrow } from "./helpers"
 import * as jwt from 'jsonwebtoken'
 import { JwtPayload } from 'jsonwebtoken'
-import { UnauthorizedRequestError } from "./errors"
+import { BadRequestError, UnauthorizedRequestError } from "./errors"
+import {Request} from "express"
 
 
 export async function hashPassword(password: string): Promise<string> {
@@ -54,3 +55,23 @@ export function validateJWT(tokenString: string, secret: string): string {
   }
 }
 
+export function getBearerToken(req: Request): string {
+  const jwtToken = req.get("Authorization")
+  if (!jwtToken) {
+    throw new UnauthorizedRequestError("function getBearerToken() - missing jwt token")
+  }
+
+  const trimmedHeader = jwtToken.trim()
+
+  if (!trimmedHeader.startsWith("Bearer ")) {
+    throw new BadRequestError("function getBearerToken() - jwt token missing Bearer prefix")
+  } else {
+    const token = trimmedHeader.slice("Bearer ".length).trim()
+
+    if (!token) {
+      throw new BadRequestError("function getBearerToken() - jwtToken is malformed")
+    }
+
+    return token
+  } 
+}
