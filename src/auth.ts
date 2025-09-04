@@ -1,10 +1,14 @@
 import bcrypt from "bcrypt"
 import { envOrThrow } from "./helpers"
+import * as jwt from 'jsonwebtoken'
+import { JwtPayload } from 'jsonwebtoken'
+import { UnauthorizedRequestError } from "./errors"
 
-const SALT_ROUNDS = envOrThrow(process.env.SALT_ROUNDS)
-const saltRounds = Number(SALT_ROUNDS)
 
 export async function hashPassword(password: string): Promise<string> {
+  const SALT_ROUNDS = envOrThrow(process.env.SALT_ROUNDS)
+  const saltRounds = Number(SALT_ROUNDS)
+
   if (
     Number.isNaN(saltRounds) ||
     !Number.isInteger(saltRounds) ||
@@ -23,5 +27,30 @@ export async function checkPasswordHash(password: string, hash: string): Promise
   const match = await bcrypt.compare(password, hash)
 
   return match
+}
+
+export function makeJWT(userID: string, expiresIn: number, secret: string): string {
+  type payload = Pick<JwtPayload, "iss" | "sub" | "iat" | "exp">;
+
+  const now = Math.floor(Date.now() / 1000)
+  const payload: payload = {iss:"chirpy", sub: userID, iat:now, exp:now +expiresIn}
+
+  const signedJWK = jwt.sign(payload, secret)
+
+  return signedJWK
+}
+
+export function validateJWT(tokenString: string, secret: string): string {
+  try {
+    const decodedTokenPayload = jwt.verify(tokenString, secret) as JwtPayload
+
+    if (decodedTokenPayload && typeof decodedTokenPayload === "object" && "sub" in decodedTokenPayload && typeof decodedTokenPayload.sub === "string") {
+      return decodedTokenPayload.sub
+    }
+
+    throw new UnauthorizedRequestError("function validateJWT() - invalid token payload")
+  } catch(error) {
+    throw new UnauthorizedRequestError("function validateJWT() - invalid or expired token")
+  }
 }
 
