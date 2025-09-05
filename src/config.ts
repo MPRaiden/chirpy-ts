@@ -5,11 +5,13 @@ process.loadEnvFile()
 
 const DB_URL = envOrThrow(process.env.DB_URL)
 const PLATFORM = envOrThrow(process.env.PLATFORM)
+const JWT_SECRET = envOrThrow(process.env.JWT_SECRET)
 
 type APIConfig = {
   fileserverhits: number,
   dbConfig: DBConfig,
   platform: string,
+  jwtSecret: string,
 }
 
 type DBConfig = {
@@ -25,6 +27,7 @@ export const config: APIConfig = {
       migrationsFolder:"src/lib/db/migrations"
     }
   },
-  platform: PLATFORM
+  platform: PLATFORM,
+  jwtSecret: JWT_SECRET
 }
 

@@ -5,10 +5,13 @@ exports.handlersGetChirps = handlersGetChirps;
 exports.handlersGetChirp = handlersGetChirp;
 const errors_1 = require("./errors");
 const chirps_1 = require("./lib/queries/chirps");
+const auth_1 = require("./auth");
+const config_1 = require("./config");
 async function handlersCreateChirp(req, res, next) {
     try {
         const reqBody = req.body;
-        const userId = reqBody.userId;
+        const bearerToken = (0, auth_1.getBearerToken)(req);
+        const userId = (0, auth_1.validateJWT)(bearerToken, config_1.config.jwtSecret);
         if (reqBody.body.length > 140) {
             throw new errors_1.BadRequestError("Chirp is too long. Max length is 140");
         }

@@ -5,6 +5,7 @@ const helpers_1 = require("./helpers");
 process.loadEnvFile();
 const DB_URL = (0, helpers_1.envOrThrow)(process.env.DB_URL);
 const PLATFORM = (0, helpers_1.envOrThrow)(process.env.PLATFORM);
+const JWT_SECRET = (0, helpers_1.envOrThrow)(process.env.JWT_SECRET);
 exports.config = {
     fileserverhits: 0,
     dbConfig: {
@@ -13,5 +14,6 @@ exports.config = {
             migrationsFolder: "src/lib/db/migrations"
         }
     },
-    platform: PLATFORM
+    platform: PLATFORM,
+    jwtSecret: JWT_SECRET
 };

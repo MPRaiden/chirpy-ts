@@ -75,3 +75,4 @@ export function getBearerToken(req: Request): string {
     return token
   } 
 }
+

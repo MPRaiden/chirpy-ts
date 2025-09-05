@@ -4,7 +4,8 @@ import { BadRequestError, ForbiddenRequestError, UnauthorizedRequestError } from
 import { createUser, deleteUsers, getUserByEmail } from "./lib/queries/users"
 import { NewUser } from "./lib/db/schema"
 import { config } from "./config"
-import { checkPasswordHash, hashPassword } from "./auth"
+import { checkPasswordHash, hashPassword, makeJWT } from "./auth"
+import { isPositiveInteger } from "./helpers"
 
 export async function handlersCreateUser(req: Request, res: Response, next: NextFunction) {
   try {
@@ -60,13 +61,17 @@ export async function handlersLogin(req: Request, res: Response, next: NextFunct
     const reqBody = req.body
     const email = reqBody.email
     const password = reqBody.password
+    let expiresInSeconds = reqBody?.expiresInSeconds
 
     if (typeof(email) !== "string" || email.length === 0) {
       throw new BadRequestError("email missing from request body")
     }
-    if(typeof(email) !== "string" || password.length === 0) {
+    if(typeof(password) !== "string" || password.length === 0) {
       throw new BadRequestError("password missing from requst body")
     }
+    if(!expiresInSeconds || expiresInSeconds > 3600 || !isPositiveInteger(expiresInSeconds)) {
+      expiresInSeconds = 3600
+    } 
 
     const user = await getUserByEmail(email)
     if (!user) {
@@ -78,11 +83,14 @@ export async function handlersLogin(req: Request, res: Response, next: NextFunct
       throw new UnauthorizedRequestError("Incorrect email or password")
     }
 
+    const signedJWT = makeJWT(user.id, expiresInSeconds, config.jwtSecret)
+
     res.status(200).json({
       id: user.id,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       email: user.email,
+      token: signedJWT,
     })
   } catch(error) {
     next(error)

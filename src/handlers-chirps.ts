@@ -2,6 +2,8 @@ import { NextFunction, Request, Response} from "express"
 import { BadRequestError, NotFoundError } from "./errors"
 import { createChirp, getChirpById, getChirps } from "./lib/queries/chirps"
 import { NewChirp } from "./lib/db/schema"
+import { getBearerToken, validateJWT } from "./auth"
+import { config } from "./config"
 
 
 export async function handlersCreateChirp(req: Request, res: Response, next: NextFunction) {
@@ -12,7 +14,9 @@ export async function handlersCreateChirp(req: Request, res: Response, next: Nex
 
   try {
     const reqBody: params = req.body
-    const userId = reqBody.userId
+
+    const bearerToken = getBearerToken(req)
+    const userId = validateJWT(bearerToken, config.jwtSecret)
           
     if (reqBody.body.length > 140) {
       throw new BadRequestError("Chirp is too long. Max length is 140")

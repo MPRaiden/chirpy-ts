@@ -40,9 +40,11 @@ exports.hashPassword = hashPassword;
 exports.checkPasswordHash = checkPasswordHash;
 exports.makeJWT = makeJWT;
 exports.validateJWT = validateJWT;
+exports.getBearerToken = getBearerToken;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const helpers_1 = require("./helpers");
 const jwt = __importStar(require("jsonwebtoken"));
+const errors_1 = require("./errors");
 async function hashPassword(password) {
     const SALT_ROUNDS = (0, helpers_1.envOrThrow)(process.env.SALT_ROUNDS);
     const saltRounds = Number(SALT_ROUNDS);
@@ -71,9 +73,26 @@ function validateJWT(tokenString, secret) {
         if (decodedTokenPayload && typeof decodedTokenPayload === "object" && "sub" in decodedTokenPayload && typeof decodedTokenPayload.sub === "string") {
             return decodedTokenPayload.sub;
         }
-        throw new Error("function validateJWT() - invalid token payload");
+        throw new errors_1.UnauthorizedRequestError("function validateJWT() - invalid token payload");
     }
     catch (error) {
-        throw new Error("function validateJWT() - invalid or expired token");
+        throw new errors_1.UnauthorizedRequestError("function validateJWT() - invalid or expired token");
+    }
+}
+function getBearerToken(req) {
+    const jwtToken = req.get("Authorization");
+    if (!jwtToken) {
+        throw new errors_1.UnauthorizedRequestError("function getBearerToken() - missing jwt token");
+    }
+    const trimmedHeader = jwtToken.trim();
+    if (!trimmedHeader.startsWith("Bearer ")) {
+        throw new errors_1.BadRequestError("function getBearerToken() - jwt token missing Bearer prefix");
+    }
+    else {
+        const token = trimmedHeader.slice("Bearer ".length).trim();
+        if (!token) {
+            throw new errors_1.BadRequestError("function getBearerToken() - jwtToken is malformed");
+        }
+        return token;
     }
 }
