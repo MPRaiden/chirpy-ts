@@ -4,6 +4,7 @@ import * as jwt from 'jsonwebtoken'
 import { JwtPayload } from 'jsonwebtoken'
 import { BadRequestError, UnauthorizedRequestError } from "./errors"
 import {Request} from "express"
+import crypto from 'node:crypto'
 
 
 export async function hashPassword(password: string): Promise<string> {
@@ -74,5 +75,33 @@ export function getBearerToken(req: Request): string {
 
     return token
   } 
+}
+
+export function makeRefreshToken() {
+  const randData = crypto.randomBytes(32).toString('hex')
+
+  return randData
+}
+
+export function getRefreshTokenString(req: Request) {
+  const refreshToken = req.get("Authorization")
+
+  if (!refreshToken) {
+    throw new UnauthorizedRequestError("function getRefreshToken() - missing refresh token")
+  }
+
+  const trimmedHeader = refreshToken.trim()
+
+  if (!trimmedHeader.startsWith("Bearer")) {
+    throw new BadRequestError("function getRefreshToken() - refresh token missing Bearer prefix")
+  } else {
+    const token = trimmedHeader.slice("Bearer".length).trim()
+
+    if (!token) {
+      throw new BadRequestError("function getRefreshToken() - refresh token is malformed")
+    }
+
+    return token
+  }
 }
 

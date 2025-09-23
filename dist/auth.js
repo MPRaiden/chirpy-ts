@@ -41,10 +41,13 @@ exports.checkPasswordHash = checkPasswordHash;
 exports.makeJWT = makeJWT;
 exports.validateJWT = validateJWT;
 exports.getBearerToken = getBearerToken;
+exports.makeRefreshToken = makeRefreshToken;
+exports.getRefreshTokenString = getRefreshTokenString;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const helpers_1 = require("./helpers");
 const jwt = __importStar(require("jsonwebtoken"));
 const errors_1 = require("./errors");
+const node_crypto_1 = __importDefault(require("node:crypto"));
 async function hashPassword(password) {
     const SALT_ROUNDS = (0, helpers_1.envOrThrow)(process.env.SALT_ROUNDS);
     const saltRounds = Number(SALT_ROUNDS);
@@ -92,6 +95,27 @@ function getBearerToken(req) {
         const token = trimmedHeader.slice("Bearer ".length).trim();
         if (!token) {
             throw new errors_1.BadRequestError("function getBearerToken() - jwtToken is malformed");
+        }
+        return token;
+    }
+}
+function makeRefreshToken() {
+    const randData = node_crypto_1.default.randomBytes(32).toString('hex');
+    return randData;
+}
+function getRefreshTokenString(req) {
+    const refreshToken = req.get("Authorization");
+    if (!refreshToken) {
+        throw new errors_1.UnauthorizedRequestError("function getRefreshToken() - missing refresh token");
+    }
+    const trimmedHeader = refreshToken.trim();
+    if (!trimmedHeader.startsWith("Bearer")) {
+        throw new errors_1.BadRequestError("function getRefreshToken() - refresh token missing Bearer prefix");
+    }
+    else {
+        const token = trimmedHeader.slice("Bearer".length).trim();
+        if (!token) {
+            throw new errors_1.BadRequestError("function getRefreshToken() - refresh token is malformed");
         }
         return token;
     }

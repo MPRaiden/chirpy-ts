@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.chirps = exports.users = void 0;
+exports.refreshTokens = exports.chirps = exports.users = void 0;
 const pg_core_1 = require("drizzle-orm/pg-core");
 exports.users = (0, pg_core_1.pgTable)("users", {
     id: (0, pg_core_1.uuid)("id").primaryKey().defaultRandom(),
@@ -21,4 +21,15 @@ exports.chirps = (0, pg_core_1.pgTable)("chirps", {
         .$onUpdate(() => new Date()),
     body: (0, pg_core_1.varchar)("body").notNull(),
     userId: (0, pg_core_1.uuid)("user_id").references(() => exports.users.id, { onDelete: 'cascade' }).notNull(),
+});
+exports.refreshTokens = (0, pg_core_1.pgTable)("refresh_tokens", {
+    token: (0, pg_core_1.varchar)("token", { length: 64 }).primaryKey(),
+    createdAt: (0, pg_core_1.timestamp)("created_at").notNull().defaultNow(),
+    updatedAt: (0, pg_core_1.timestamp)("updated_at")
+        .notNull()
+        .defaultNow()
+        .$onUpdate(() => new Date()),
+    userId: (0, pg_core_1.uuid)("user_id").references(() => exports.users.id, { onDelete: 'cascade' }).notNull(),
+    expiresAt: (0, pg_core_1.timestamp)("expires_at").notNull(),
+    revokedAt: (0, pg_core_1.timestamp)("revoked_at")
 });

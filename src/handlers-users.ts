@@ -4,8 +4,8 @@ import { BadRequestError, ForbiddenRequestError, UnauthorizedRequestError } from
 import { createUser, deleteUsers, getUserByEmail } from "./lib/queries/users"
 import { NewUser } from "./lib/db/schema"
 import { config } from "./config"
-import { checkPasswordHash, hashPassword, makeJWT } from "./auth"
-import { isPositiveInteger } from "./helpers"
+import { checkPasswordHash, getRefreshTokenString, hashPassword, makeJWT, makeRefreshToken } from "./auth"
+import { getRefreshTokenByValue, getUserByRefreshToken, insertRefreshToken, revokeToken } from "./lib/queries/tokens"
 
 export async function handlersCreateUser(req: Request, res: Response, next: NextFunction) {
   try {
@@ -61,7 +61,6 @@ export async function handlersLogin(req: Request, res: Response, next: NextFunct
     const reqBody = req.body
     const email = reqBody.email
     const password = reqBody.password
-    let expiresInSeconds = reqBody?.expiresInSeconds
 
     if (typeof(email) !== "string" || email.length === 0) {
       throw new BadRequestError("email missing from request body")
@@ -69,9 +68,6 @@ export async function handlersLogin(req: Request, res: Response, next: NextFunct
     if(typeof(password) !== "string" || password.length === 0) {
       throw new BadRequestError("password missing from requst body")
     }
-    if(!expiresInSeconds || expiresInSeconds > 3600 || !isPositiveInteger(expiresInSeconds)) {
-      expiresInSeconds = 3600
-    } 
 
     const user = await getUserByEmail(email)
     if (!user) {
@@ -83,7 +79,10 @@ export async function handlersLogin(req: Request, res: Response, next: NextFunct
       throw new UnauthorizedRequestError("Incorrect email or password")
     }
 
-    const signedJWT = makeJWT(user.id, expiresInSeconds, config.jwtSecret)
+    const signedJWT = makeJWT(user.id, 3600, config.jwtSecret)
+    const refreshToken = makeRefreshToken()
+    const expiresAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000)    
+    await insertRefreshToken({token: refreshToken, userId:user.id, expiresAt: expiresAt,revokedAt: null})
 
     res.status(200).json({
       id: user.id,
@@ -91,9 +90,52 @@ export async function handlersLogin(req: Request, res: Response, next: NextFunct
       updatedAt: user.updatedAt,
       email: user.email,
       token: signedJWT,
+      refreshToken: refreshToken,
     })
   } catch(error) {
     next(error)
   }
 }
 
+export async function handlerRefreshToken(req: Request, res: Response, next: NextFunction) {
+  try {
+    const refreshTokenStr = getRefreshTokenString(req)
+    const token = await getRefreshTokenByValue(refreshTokenStr)
+    const now = new Date()
+
+    if (!token || token.revokedAt || token.expiresAt < now ) {
+      res.status(401).send()
+      return
+    } else {
+      const user = await getUserByRefreshToken(token)
+      if (!user) {
+        res.status(401).send()
+        return
+      }
+
+      const newJWTToken = makeJWT(user.id, 3600,  config.jwtSecret)
+      res.status(200).json({
+        "token": newJWTToken
+      })
+    }
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function handlerRevokeRefreshToken(req: Request, res: Response, next: NextFunction) {
+  try {
+    const refreshTokenStr = getRefreshTokenString(req)
+    const token = await getRefreshTokenByValue(refreshTokenStr)
+    if (!token || token.revokedAt) {
+      res.status(401).send()
+      return
+    }
+
+    await revokeToken(token)
+
+    res.status(204).send()
+  } catch(error) {
+    next(error)
+  }
+}
