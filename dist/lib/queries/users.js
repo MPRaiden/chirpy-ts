@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createUser = createUser;
+exports.updateUserMailPass = updateUserMailPass;
 exports.deleteUsers = deleteUsers;
 exports.getUserByEmail = getUserByEmail;
 const index_1 = require("../index");
@@ -13,6 +14,9 @@ async function createUser(user) {
         .onConflictDoNothing()
         .returning();
     return result;
+}
+async function updateUserMailPass(user, userId) {
+    await index_1.db.update(schema_1.users).set({ 'email': user.email, 'hashed_password': user.hashed_password }).where((0, drizzle_orm_1.eq)(schema_1.users.id, userId));
 }
 async function deleteUsers() {
     await index_1.db.delete(schema_1.users);

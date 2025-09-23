@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response} from "express"
 
 import { BadRequestError, ForbiddenRequestError, UnauthorizedRequestError } from "./errors"
-import { createUser, deleteUsers, getUserByEmail } from "./lib/queries/users"
+import { createUser, deleteUsers, getUserByEmail, updateUserMailPass } from "./lib/queries/users"
 import { NewUser } from "./lib/db/schema"
 import { config } from "./config"
-import { checkPasswordHash, getRefreshTokenString, hashPassword, makeJWT, makeRefreshToken } from "./auth"
+import { checkPasswordHash, getBearerToken, getRefreshTokenString, hashPassword, makeJWT, makeRefreshToken, validateJWT } from "./auth"
 import { getRefreshTokenByValue, getUserByRefreshToken, insertRefreshToken, revokeToken } from "./lib/queries/tokens"
 
 export async function handlersCreateUser(req: Request, res: Response, next: NextFunction) {
@@ -139,3 +139,38 @@ export async function handlerRevokeRefreshToken(req: Request, res: Response, nex
     next(error)
   }
 }
+
+export async function handlerUsersUpdate(req: Request, res: Response, next: NextFunction) {
+  try {
+    const reqBody = req.body
+    const email = reqBody.email
+    const password = reqBody.password
+
+    if (typeof(email) !== "string" || email.length === 0) {
+      throw new BadRequestError("email missing from request body")
+    }
+    if(typeof(email) !== "string" || password.length === 0) {
+      throw new BadRequestError("password missing from requst body")
+    }
+
+    const hashedPassword = await hashPassword(password)
+
+    const bearerToken = getBearerToken(req)
+    const userId = validateJWT(bearerToken, config.jwtSecret)
+
+    const newUser: NewUser= { email: email, hashed_password: hashedPassword }
+
+    await updateUserMailPass(newUser, userId)
+    const updatedUser = await getUserByEmail(email)
+
+    res.status(200).json({
+      id: updatedUser.id,
+      createdAt: updatedUser.createdAt,
+      updatedAt: updatedUser.updatedAt,
+      email: updatedUser.email,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+

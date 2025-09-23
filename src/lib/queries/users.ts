@@ -11,6 +11,10 @@ export async function createUser(user: NewUser) {
   return result
 }
 
+export async function updateUserMailPass(user: NewUser, userId: string) {
+  await db.update(users).set({'email': user.email, 'hashed_password': user.hashed_password}).where(eq(users.id, userId))
+}
+
 export async function deleteUsers() {
   await db.delete(users)
 }

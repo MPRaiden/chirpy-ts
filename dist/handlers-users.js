@@ -5,6 +5,7 @@ exports.handlersDeleteUsers = handlersDeleteUsers;
 exports.handlersLogin = handlersLogin;
 exports.handlerRefreshToken = handlerRefreshToken;
 exports.handlerRevokeRefreshToken = handlerRevokeRefreshToken;
+exports.handlerUsersUpdate = handlerUsersUpdate;
 const errors_1 = require("./errors");
 const users_1 = require("./lib/queries/users");
 const config_1 = require("./config");
@@ -121,12 +122,36 @@ async function handlerRevokeRefreshToken(req, res, next) {
             res.status(401).send();
             return;
         }
-        const revokendToken = await (0, tokens_1.revokeToken)(token);
-        // if (!revokendToken) {
-        //   res.status(401).send()
-        //   return
-        // }
+        await (0, tokens_1.revokeToken)(token);
         res.status(204).send();
+    }
+    catch (error) {
+        next(error);
+    }
+}
+async function handlerUsersUpdate(req, res, next) {
+    try {
+        const reqBody = req.body;
+        const email = reqBody.email;
+        const password = reqBody.password;
+        if (typeof (email) !== "string" || email.length === 0) {
+            throw new errors_1.BadRequestError("email missing from request body");
+        }
+        if (typeof (email) !== "string" || password.length === 0) {
+            throw new errors_1.BadRequestError("password missing from requst body");
+        }
+        const hashedPassword = await (0, auth_1.hashPassword)(password);
+        const bearerToken = (0, auth_1.getBearerToken)(req);
+        const userId = (0, auth_1.validateJWT)(bearerToken, config_1.config.jwtSecret);
+        const newUser = { email: email, hashed_password: hashedPassword };
+        await (0, users_1.updateUserMailPass)(newUser, userId);
+        const updatedUser = await (0, users_1.getUserByEmail)(email);
+        res.status(200).json({
+            id: updatedUser.id,
+            createdAt: updatedUser.createdAt,
+            updatedAt: updatedUser.updatedAt,
+            email: updatedUser.email,
+        });
     }
     catch (error) {
         next(error);

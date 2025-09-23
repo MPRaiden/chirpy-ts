@@ -25,6 +25,5 @@ async function getUserByRefreshToken(token) {
 }
 async function revokeToken(token) {
     const now = new Date();
-    const [revokedToken] = await index_1.db.update(schema_1.refreshTokens).set({ 'revokedAt': now, 'updatedAt': now }).where((0, drizzle_orm_1.eq)(schema_1.refreshTokens.token, token.token));
-    return revokedToken;
+    await index_1.db.update(schema_1.refreshTokens).set({ 'revokedAt': now, 'updatedAt': now }).where((0, drizzle_orm_1.eq)(schema_1.refreshTokens.token, token.token));
 }
