@@ -83,3 +83,12 @@ export async function handlersGetChirp(req: Request, res: Response, next: NextFu
   }
 }
 
+export async function handlersDeleteChirp(req: Request, res: Response, next: NextFunction) {
+  try {
+    const params = req.params
+    const chirpID = params.chirpID
+
+  }catch (error) {
+    next(error)
+  }
+}
