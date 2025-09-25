@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response} from "express"
 import { BadRequestError, NotFoundError } from "./errors"
-import { createChirp, getChirpById, getChirps } from "./lib/queries/chirps"
+import { createChirp, deleteChirp, getChirpById, getChirps } from "./lib/queries/chirps"
 import { NewChirp } from "./lib/db/schema"
 import { getBearerToken, validateJWT } from "./auth"
 import { config } from "./config"
@@ -86,9 +86,27 @@ export async function handlersGetChirp(req: Request, res: Response, next: NextFu
 export async function handlersDeleteChirp(req: Request, res: Response, next: NextFunction) {
   try {
     const params = req.params
-    const chirpID = params.chirpID
 
-  }catch (error) {
+    const chirpID = params.chirpID
+    const chirp = await getChirpById(chirpID)
+    if (!chirp) {
+      res.status(404).send()
+      return
+    }
+
+    const bearerToken = getBearerToken(req)
+    const userId = validateJWT(bearerToken, config.jwtSecret)
+
+    if (chirp.userId !== userId) {
+      res.status(403).send()
+      return
+    }
+    
+    await deleteChirp(chirpID)
+    res.status(204).send()
+
+  } catch (error) {
     next(error)
   }
 }
+

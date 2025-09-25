@@ -30,6 +30,7 @@ const handlers_chirps_1 = require("./handlers-chirps");
     app.post("/api/refresh/", handlers_users_1.handlerRefreshToken);
     app.post("/api/revoke/", handlers_users_1.handlerRevokeRefreshToken);
     app.put("/api/users/", handlers_users_1.handlerUsersUpdate);
+    app.delete("/api/chirps/:chirpID", handlers_chirps_1.handlersDeleteChirp);
     app.post("/admin/reset", handlers_users_1.handlersDeleteUsers);
     app.get("/admin/metrics", handlers_1.handlerNumRequests);
     app.use(handlers_1.handlersError);

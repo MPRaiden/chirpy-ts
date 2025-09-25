@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.handlersCreateChirp = handlersCreateChirp;
 exports.handlersGetChirps = handlersGetChirps;
 exports.handlersGetChirp = handlersGetChirp;
+exports.handlersDeleteChirp = handlersDeleteChirp;
 const errors_1 = require("./errors");
 const chirps_1 = require("./lib/queries/chirps");
 const auth_1 = require("./auth");
@@ -69,6 +70,28 @@ async function handlersGetChirp(req, res, next) {
         else {
             throw new errors_1.NotFoundError(`chirp with ID "${chirpID}" not found`);
         }
+    }
+    catch (error) {
+        next(error);
+    }
+}
+async function handlersDeleteChirp(req, res, next) {
+    try {
+        const params = req.params;
+        const chirpID = params.chirpID;
+        const chirp = await (0, chirps_1.getChirpById)(chirpID);
+        if (!chirp) {
+            res.status(404).send();
+            return;
+        }
+        const bearerToken = (0, auth_1.getBearerToken)(req);
+        const userId = (0, auth_1.validateJWT)(bearerToken, config_1.config.jwtSecret);
+        if (chirp.userId !== userId) {
+            res.status(403).send();
+            return;
+        }
+        await (0, chirps_1.deleteChirp)(chirpID);
+        res.status(204).send();
     }
     catch (error) {
         next(error);
