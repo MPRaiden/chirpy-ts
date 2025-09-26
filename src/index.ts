@@ -6,7 +6,7 @@ import { handlerNumRequests, handlerReadiness, handlersError } from "./handlers"
 import { middlewareLogResponses, middlewareMetricsInc } from "./middleware"
 import { drizzle } from "drizzle-orm/postgres-js"
 import { config } from "./config"
-import { handlerRefreshToken, handlerRevokeRefreshToken, handlersCreateUser, handlersDeleteUsers, handlersLogin, handlerUsersUpdate } from "./handlers-users"
+import { handlerRefreshToken, handlerRevokeRefreshToken, handlersCreateUser, handlersDeleteUsers, handlersLogin, handlersUsersUpgrade, handlerUsersUpdate } from "./handlers-users"
 import { handlersCreateChirp, handlersDeleteChirp, handlersGetChirp, handlersGetChirps } from "./handlers-chirps"
 
 (async() => {
@@ -31,6 +31,7 @@ import { handlersCreateChirp, handlersDeleteChirp, handlersGetChirp, handlersGet
   app.post("/api/revoke/", handlerRevokeRefreshToken)
   app.put("/api/users/", handlerUsersUpdate)
   app.delete("/api/chirps/:chirpID", handlersDeleteChirp)
+  app.post("/api/polka/webhooks", handlersUsersUpgrade)
 
   app.post("/admin/reset", handlersDeleteUsers)
   app.get("/admin/metrics", handlerNumRequests)

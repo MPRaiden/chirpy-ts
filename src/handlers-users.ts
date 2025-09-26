@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response} from "express"
 
 import { BadRequestError, ForbiddenRequestError, UnauthorizedRequestError } from "./errors"
-import { createUser, deleteUsers, getUserByEmail, updateUserMailPass } from "./lib/queries/users"
+import { createUser, deleteUsers, getUserByEmail, getUserById, updateUserMailPass, updateUserToRed } from "./lib/queries/users"
 import { NewUser } from "./lib/db/schema"
 import { config } from "./config"
 import { checkPasswordHash, getBearerToken, getRefreshTokenString, hashPassword, makeJWT, makeRefreshToken, validateJWT } from "./auth"
@@ -33,6 +33,7 @@ export async function handlersCreateUser(req: Request, res: Response, next: Next
       createdAt: created.createdAt,
       updatedAt: created.updatedAt,
       email: created.email,
+      isChirpyRed: created.is_chirpy_red,
     })
 
   } catch (error) {
@@ -91,6 +92,7 @@ export async function handlersLogin(req: Request, res: Response, next: NextFunct
       email: user.email,
       token: signedJWT,
       refreshToken: refreshToken,
+      isChirpyRed: user.is_chirpy_red,
     })
   } catch(error) {
     next(error)
@@ -168,8 +170,34 @@ export async function handlerUsersUpdate(req: Request, res: Response, next: Next
       createdAt: updatedUser.createdAt,
       updatedAt: updatedUser.updatedAt,
       email: updatedUser.email,
+      isChirpyRed: updatedUser.is_chirpy_red,
     })
   } catch (error) {
+    next(error)
+  }
+}
+
+export async function handlersUsersUpgrade(req: Request, res: Response, next: NextFunction) {
+  try {
+    const reqBody = req.body
+    const event = reqBody.event
+    const userId = reqBody.data.userId
+    
+    if (event !== "user.upgraded") {
+      res.status(204).send()
+      return
+    }
+    
+    const user = await getUserById(userId)
+    if (!user) {
+      res.status(404).send()
+      return
+    }
+
+    await updateUserToRed(user.id)
+    res.status(204).json({})
+    
+  } catch(error) {
     next(error)
   }
 }

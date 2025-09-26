@@ -6,6 +6,7 @@ exports.handlersLogin = handlersLogin;
 exports.handlerRefreshToken = handlerRefreshToken;
 exports.handlerRevokeRefreshToken = handlerRevokeRefreshToken;
 exports.handlerUsersUpdate = handlerUsersUpdate;
+exports.handlersUsersUpgrade = handlersUsersUpgrade;
 const errors_1 = require("./errors");
 const users_1 = require("./lib/queries/users");
 const config_1 = require("./config");
@@ -33,6 +34,7 @@ async function handlersCreateUser(req, res, next) {
             createdAt: created.createdAt,
             updatedAt: created.updatedAt,
             email: created.email,
+            isChirpyRed: created.is_chirpy_red,
         });
     }
     catch (error) {
@@ -83,6 +85,7 @@ async function handlersLogin(req, res, next) {
             email: user.email,
             token: signedJWT,
             refreshToken: refreshToken,
+            isChirpyRed: user.is_chirpy_red,
         });
     }
     catch (error) {
@@ -151,7 +154,29 @@ async function handlerUsersUpdate(req, res, next) {
             createdAt: updatedUser.createdAt,
             updatedAt: updatedUser.updatedAt,
             email: updatedUser.email,
+            isChirpyRed: updatedUser.is_chirpy_red,
         });
+    }
+    catch (error) {
+        next(error);
+    }
+}
+async function handlersUsersUpgrade(req, res, next) {
+    try {
+        const reqBody = req.body;
+        const event = reqBody.event;
+        const userId = reqBody.data.userId;
+        if (event !== "user.upgraded") {
+            res.status(204).send();
+            return;
+        }
+        const user = await (0, users_1.getUserById)(userId);
+        if (!user) {
+            res.status(404).send();
+            return;
+        }
+        await (0, users_1.updateUserToRed)(user.id);
+        res.status(204).json({});
     }
     catch (error) {
         next(error);

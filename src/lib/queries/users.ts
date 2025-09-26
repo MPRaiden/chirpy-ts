@@ -24,3 +24,12 @@ export async function getUserByEmail(email:string) {
   return result
 }
 
+export async function getUserById(userId: string) {
+  const [result] = await db.select().from(users).where(eq(users.id, userId))
+  return result
+}
+
+export async function updateUserToRed(userId: string) {
+  await db.update(users).set({'is_chirpy_red': true}).where(eq(users.id, userId))
+}
+
