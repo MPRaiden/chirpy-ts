@@ -163,6 +163,10 @@ async function handlerUsersUpdate(req, res, next) {
 }
 async function handlersUsersUpgrade(req, res, next) {
     try {
+        const apiKey = await (0, auth_1.getAPIKey)(req);
+        if (apiKey !== config_1.config.polkaKey) {
+            throw new errors_1.UnauthorizedRequestError("Wrong API key");
+        }
         const reqBody = req.body;
         const event = reqBody.event;
         const userId = reqBody.data.userId;

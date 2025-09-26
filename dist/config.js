@@ -6,6 +6,7 @@ process.loadEnvFile();
 const DB_URL = (0, helpers_1.envOrThrow)(process.env.DB_URL);
 const PLATFORM = (0, helpers_1.envOrThrow)(process.env.PLATFORM);
 const JWT_SECRET = (0, helpers_1.envOrThrow)(process.env.JWT_SECRET);
+const POLKA_KEY = (0, helpers_1.envOrThrow)(process.env.POLKA_KEY);
 exports.config = {
     fileserverhits: 0,
     dbConfig: {
@@ -15,5 +16,6 @@ exports.config = {
         }
     },
     platform: PLATFORM,
-    jwtSecret: JWT_SECRET
+    jwtSecret: JWT_SECRET,
+    polkaKey: POLKA_KEY
 };

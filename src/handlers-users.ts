@@ -4,7 +4,7 @@ import { BadRequestError, ForbiddenRequestError, UnauthorizedRequestError } from
 import { createUser, deleteUsers, getUserByEmail, getUserById, updateUserMailPass, updateUserToRed } from "./lib/queries/users"
 import { NewUser } from "./lib/db/schema"
 import { config } from "./config"
-import { checkPasswordHash, getBearerToken, getRefreshTokenString, hashPassword, makeJWT, makeRefreshToken, validateJWT } from "./auth"
+import { checkPasswordHash, getAPIKey, getBearerToken, getRefreshTokenString, hashPassword, makeJWT, makeRefreshToken, validateJWT } from "./auth"
 import { getRefreshTokenByValue, getUserByRefreshToken, insertRefreshToken, revokeToken } from "./lib/queries/tokens"
 
 export async function handlersCreateUser(req: Request, res: Response, next: NextFunction) {
@@ -179,6 +179,12 @@ export async function handlerUsersUpdate(req: Request, res: Response, next: Next
 
 export async function handlersUsersUpgrade(req: Request, res: Response, next: NextFunction) {
   try {
+    const apiKey = await getAPIKey(req)
+
+    if (apiKey !== config.polkaKey) {
+      throw new UnauthorizedRequestError("Wrong API key")
+    }
+
     const reqBody = req.body
     const event = reqBody.event
     const userId = reqBody.data.userId

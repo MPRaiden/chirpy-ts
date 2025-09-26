@@ -5,6 +5,7 @@ import { JwtPayload } from 'jsonwebtoken'
 import { BadRequestError, UnauthorizedRequestError } from "./errors"
 import {Request} from "express"
 import crypto from 'node:crypto'
+import { config } from "./config"
 
 
 export async function hashPassword(password: string): Promise<string> {
@@ -102,6 +103,29 @@ export function getRefreshTokenString(req: Request) {
     }
 
     return token
+  }
+}
+
+export async function getAPIKey(req: Request) {
+  const apiKey = req.get("Authorization")
+  
+ 
+  if (!apiKey) {
+    throw new UnauthorizedRequestError("function getAPIKey() - missing API key")
+  }
+
+  const trimmedHeader = apiKey.trim()
+
+  if (!trimmedHeader.startsWith("ApiKey")) {
+    throw new BadRequestError("function getAPIKey() - api key missing ApiKey prefix")
+  } else {
+    const key = trimmedHeader.slice("ApiKey ".length).trim()
+
+    if (!key) {
+      throw new BadRequestError("function getAPIKey() - key is malformed")
+    }
+
+    return key
   }
 }
 

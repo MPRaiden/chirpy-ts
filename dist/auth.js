@@ -43,6 +43,7 @@ exports.validateJWT = validateJWT;
 exports.getBearerToken = getBearerToken;
 exports.makeRefreshToken = makeRefreshToken;
 exports.getRefreshTokenString = getRefreshTokenString;
+exports.getAPIKey = getAPIKey;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const helpers_1 = require("./helpers");
 const jwt = __importStar(require("jsonwebtoken"));
@@ -118,5 +119,22 @@ function getRefreshTokenString(req) {
             throw new errors_1.BadRequestError("function getRefreshToken() - refresh token is malformed");
         }
         return token;
+    }
+}
+async function getAPIKey(req) {
+    const apiKey = req.get("Authorization");
+    if (!apiKey) {
+        throw new errors_1.UnauthorizedRequestError("function getAPIKey() - missing API key");
+    }
+    const trimmedHeader = apiKey.trim();
+    if (!trimmedHeader.startsWith("ApiKey")) {
+        throw new errors_1.BadRequestError("function getAPIKey() - api key missing ApiKey prefix");
+    }
+    else {
+        const key = trimmedHeader.slice("ApiKey ".length).trim();
+        if (!key) {
+            throw new errors_1.BadRequestError("function getAPIKey() - key is malformed");
+        }
+        return key;
     }
 }

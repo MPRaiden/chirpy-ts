@@ -6,12 +6,14 @@ process.loadEnvFile()
 const DB_URL = envOrThrow(process.env.DB_URL)
 const PLATFORM = envOrThrow(process.env.PLATFORM)
 const JWT_SECRET = envOrThrow(process.env.JWT_SECRET)
+const POLKA_KEY = envOrThrow(process.env.POLKA_KEY)
 
 type APIConfig = {
   fileserverhits: number,
   dbConfig: DBConfig,
   platform: string,
   jwtSecret: string,
+  polkaKey: string,
 }
 
 type DBConfig = {
@@ -28,6 +30,7 @@ export const config: APIConfig = {
     }
   },
   platform: PLATFORM,
-  jwtSecret: JWT_SECRET
+  jwtSecret: JWT_SECRET,
+  polkaKey: POLKA_KEY
 }
 
