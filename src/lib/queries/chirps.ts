@@ -12,6 +12,11 @@ export async function getChirps() {
   return result
 }
 
+export async function getChirpsByUserId(userId: string) {
+  const result = await db.select().from(chirps).where(eq(chirps.userId, userId))
+  return result
+}
+
 export async function getChirpById(chirpId: string) {
   const [result] = await db.select().from(chirps).where(eq(chirps.id, chirpId))
   return result

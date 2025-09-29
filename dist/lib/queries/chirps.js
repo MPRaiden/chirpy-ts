@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createChirp = createChirp;
 exports.getChirps = getChirps;
+exports.getChirpsByUserId = getChirpsByUserId;
 exports.getChirpById = getChirpById;
 exports.deleteChirp = deleteChirp;
 const index_1 = require("../index");
@@ -13,6 +14,10 @@ async function createChirp(chirp) {
 }
 async function getChirps() {
     const result = await index_1.db.select().from(schema_1.chirps).orderBy((0, drizzle_orm_1.asc)(schema_1.chirps.createdAt));
+    return result;
+}
+async function getChirpsByUserId(userId) {
+    const result = await index_1.db.select().from(schema_1.chirps).where((0, drizzle_orm_1.eq)(schema_1.chirps.userId, userId));
     return result;
 }
 async function getChirpById(chirpId) {

@@ -1,9 +1,10 @@
 import { NextFunction, Request, Response} from "express"
 import { BadRequestError, NotFoundError } from "./errors"
-import { createChirp, deleteChirp, getChirpById, getChirps } from "./lib/queries/chirps"
+import { createChirp, deleteChirp, getChirpById, getChirps, getChirpsByUserId } from "./lib/queries/chirps"
 import { NewChirp } from "./lib/db/schema"
 import { getBearerToken, validateJWT } from "./auth"
 import { config } from "./config"
+import { getUserById } from "./lib/queries/users"
 
 
 export async function handlersCreateChirp(req: Request, res: Response, next: NextFunction) {
@@ -56,11 +57,25 @@ export async function handlersCreateChirp(req: Request, res: Response, next: Nex
 
 export async function handlersGetChirps(req: Request, res: Response, next: NextFunction) {
   try {
-    const chirps = await getChirps()
-    if (chirps) {
-      res.status(200).json(chirps)
+
+    let authorId = ""
+    const authorIdQuery = req.query.authorId
+    if (typeof authorIdQuery === "string") {
+      authorId = authorIdQuery
+    }
+
+    if (!authorId) {
+      const chirps = await getChirps()
+      if (chirps) {
+        res.status(200).json(chirps)
+      } else {
+        throw new NotFoundError("no chirps found")
+      }
     } else {
-      throw new NotFoundError("no chirps found")
+      const chirps = await getChirpsByUserId(authorId)
+      if (chirps) {
+        res.status(200).json(chirps)
+      }
     }
   } catch(error) {
     next(error)

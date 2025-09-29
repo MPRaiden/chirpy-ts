@@ -47,12 +47,25 @@ async function handlersCreateChirp(req, res, next) {
 }
 async function handlersGetChirps(req, res, next) {
     try {
-        const chirps = await (0, chirps_1.getChirps)();
-        if (chirps) {
-            res.status(200).json(chirps);
+        let authorId = "";
+        const authorIdQuery = req.query.authorId;
+        if (typeof authorIdQuery === "string") {
+            authorId = authorIdQuery;
+        }
+        if (!authorId) {
+            const chirps = await (0, chirps_1.getChirps)();
+            if (chirps) {
+                res.status(200).json(chirps);
+            }
+            else {
+                throw new errors_1.NotFoundError("no chirps found");
+            }
         }
         else {
-            throw new errors_1.NotFoundError("no chirps found");
+            const chirps = await (0, chirps_1.getChirpsByUserId)(authorId);
+            if (chirps) {
+                res.status(200).json(chirps);
+            }
         }
     }
     catch (error) {
