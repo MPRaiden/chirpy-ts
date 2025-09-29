@@ -47,13 +47,19 @@ async function handlersCreateChirp(req, res, next) {
 }
 async function handlersGetChirps(req, res, next) {
     try {
+        // Check if request has chirp author id to filter by
         let authorId = "";
         const authorIdQuery = req.query.authorId;
         if (typeof authorIdQuery === "string") {
             authorId = authorIdQuery;
         }
+        let sort = 'asc';
+        const sortParam = req.query.sort;
+        if (sortParam && sortParam === 'desc') {
+            sort = sortParam;
+        }
         if (!authorId) {
-            const chirps = await (0, chirps_1.getChirps)();
+            const chirps = await (0, chirps_1.getChirps)(sort);
             if (chirps) {
                 res.status(200).json(chirps);
             }
@@ -62,7 +68,7 @@ async function handlersGetChirps(req, res, next) {
             }
         }
         else {
-            const chirps = await (0, chirps_1.getChirpsByUserId)(authorId);
+            const chirps = await (0, chirps_1.getChirpsByUserId)(authorId, sort);
             if (chirps) {
                 res.status(200).json(chirps);
             }

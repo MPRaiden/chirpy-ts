@@ -4,7 +4,6 @@ import { createChirp, deleteChirp, getChirpById, getChirps, getChirpsByUserId } 
 import { NewChirp } from "./lib/db/schema"
 import { getBearerToken, validateJWT } from "./auth"
 import { config } from "./config"
-import { getUserById } from "./lib/queries/users"
 
 
 export async function handlersCreateChirp(req: Request, res: Response, next: NextFunction) {
@@ -57,22 +56,28 @@ export async function handlersCreateChirp(req: Request, res: Response, next: Nex
 
 export async function handlersGetChirps(req: Request, res: Response, next: NextFunction) {
   try {
-
+    // Check if request has chirp author id to filter by
     let authorId = ""
     const authorIdQuery = req.query.authorId
     if (typeof authorIdQuery === "string") {
       authorId = authorIdQuery
     }
 
+    let sort = 'asc'
+    const sortParam = req.query.sort
+    if (sortParam && sortParam === 'desc') {
+      sort = sortParam
+    }
+
     if (!authorId) {
-      const chirps = await getChirps()
+      const chirps = await getChirps(sort)
       if (chirps) {
         res.status(200).json(chirps)
       } else {
         throw new NotFoundError("no chirps found")
       }
     } else {
-      const chirps = await getChirpsByUserId(authorId)
+      const chirps = await getChirpsByUserId(authorId, sort)
       if (chirps) {
         res.status(200).json(chirps)
       }

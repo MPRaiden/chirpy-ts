@@ -12,13 +12,25 @@ async function createChirp(chirp) {
     const [result] = await index_1.db.insert(schema_1.chirps).values(chirp).onConflictDoNothing().returning();
     return result;
 }
-async function getChirps() {
-    const result = await index_1.db.select().from(schema_1.chirps).orderBy((0, drizzle_orm_1.asc)(schema_1.chirps.createdAt));
-    return result;
+async function getChirps(sort = 'asc') {
+    if (sort === 'asc') {
+        const result = await index_1.db.select().from(schema_1.chirps).orderBy((0, drizzle_orm_1.asc)(schema_1.chirps.createdAt));
+        return result;
+    }
+    if (sort === 'desc') {
+        const result = await index_1.db.select().from(schema_1.chirps).orderBy((0, drizzle_orm_1.desc)(schema_1.chirps.createdAt));
+        return result;
+    }
 }
-async function getChirpsByUserId(userId) {
-    const result = await index_1.db.select().from(schema_1.chirps).where((0, drizzle_orm_1.eq)(schema_1.chirps.userId, userId));
-    return result;
+async function getChirpsByUserId(userId, sort = 'asc') {
+    if (sort === 'asc') {
+        const result = await index_1.db.select().from(schema_1.chirps).where((0, drizzle_orm_1.eq)(schema_1.chirps.userId, userId)).orderBy((0, drizzle_orm_1.asc)(schema_1.chirps.createdAt));
+        return result;
+    }
+    if (sort === 'desc') {
+        const result = await index_1.db.select().from(schema_1.chirps).where((0, drizzle_orm_1.eq)(schema_1.chirps.userId, userId)).orderBy((0, drizzle_orm_1.desc)(schema_1.chirps.createdAt));
+        return result;
+    }
 }
 async function getChirpById(chirpId) {
     const [result] = await index_1.db.select().from(schema_1.chirps).where((0, drizzle_orm_1.eq)(schema_1.chirps.id, chirpId));
